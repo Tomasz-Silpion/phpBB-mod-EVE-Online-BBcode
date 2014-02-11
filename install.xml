@@ -47,8 +47,8 @@
 
 	<action-group>
 		<copy>
-			<!--<file from="root/images/*.*" to="images/*.*" />
-			<file from="root/includes/*.*" to="includes/*.*" />
+			<file from="root/images/*.*" to="images/*.*" />
+			<!--<file from="root/includes/*.*" to="includes/*.*" />
 			<file from="root/install/*.*" to="install/*.*" />
 			<file from="root/language/*.*" to="language/*.*" />
 			<file from="root/styles/prosilver/*.*" to="styles/prosilver/*.*" />
