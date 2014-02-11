@@ -31,9 +31,16 @@ class System
 	{
 		$row = self::queryDatabase($systemName);
 		
-		if($row && isset($_SERVER['HTTP_EVE_TRUSTED']) && self::isSystem($systemName))
+		if($row && self::isSystem($systemName))
 		{
-			return self::returnHTML($row['systemID'], $row['systemName']);
+			if(isset($_SERVER['HTTP_EVE_TRUSTED']))
+			{
+				return self::returnHTML($row['systemID'], $row['systemName']);
+			}
+			else
+			{
+				return $row['systemName'];
+			}
 		}
 		else
 		{

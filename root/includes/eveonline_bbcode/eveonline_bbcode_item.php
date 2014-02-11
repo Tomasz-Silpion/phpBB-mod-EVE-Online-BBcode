@@ -31,9 +31,16 @@ class Item
 	{
 		$row = self::getItemInfo($itemName);
 		
-		if($row && isset($_SERVER['HTTP_EVE_TRUSTED']))
+		if($row)
 		{
-			return self::returnHTML($row['itemID'], $row['itemName']);
+			if(isset($_SERVER['HTTP_EVE_TRUSTED']))
+			{
+				return self::returnHTML($row['itemID'], $row['itemName']);
+			}
+			else
+			{
+				return $row['itemName'];
+			}
 		}
 		else
 		{

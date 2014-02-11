@@ -183,7 +183,7 @@ class Fitting
                             // No result? Item not found.
                             if(!$itemInfo)
                             {
-                                $tempFittingOutput .= '<div id="' . $slot . 'charge' . ($position + 1) . '"><img border="0" title="Unrecognized item" src="images/eve/questionmark.png"></div>';
+                                $tempFittingOutput .= '<div id="' . $slot . 'charge' . ($position + 1) . '"><img border="0" title="Unrecognized item" src="images/eveonline_bbcode/questionmark.png"></div>';
                             }
                             else
                             {
@@ -242,8 +242,8 @@ class Fitting
         $fitting_output .= '<div title="fitting" id="fitting">';
 
         // Fitting window
-        $fitting_output .= '<div id="fittingwindow"><img border="0" alt="" src="images/eve/fitting_panel.png"></div>';
-        $fitting_output .= '<div id="shiprace"><img border="0" alt="" title="' . $shipInfo['Icon'] . '" src="images/eve/races/' . $shipInfo['Icon'] . '.png"></div>';
+        $fitting_output .= '<div id="fittingwindow"><img border="0" alt="" src="images/eveonline_bbcode/fitting_panel.png"></div>';
+        $fitting_output .= '<div id="shiprace"><img border="0" alt="" title="' . $shipInfo['Icon'] . '" src="images/eveonline_bbcode/races/' . $shipInfo['Icon'] . '.png"></div>';
         $fitting_output .= '<div id="shipicon"><img border="0" alt="" title="' . $shipInfo['Tech'] . ' - ' . $shipInfo['groupName'] . ' - ' . htmlentities($shipInfo['typeName']) . '" src="http://image.eveonline.com/Render/' . $shipInfo['typeID'] . '_64.png" onclick="CCPEVE.showInfo(' . $shipInfo['typeID'] . ')" onmouseover="this.style.cursor=\'pointer\'"></div>';
 
         // Actual fitting, whereas $temp_fitting_output is holding all the slot information looped above.
@@ -275,7 +275,7 @@ class Fitting
 		
 		$sql = 'SELECT *
 				FROM ' . $table_prefix . 'eveonline_bbcode_ships
-				WHERE LOWER(shipName) = "' . $db->sql_escape(strtolower($shipName)) . '"';
+				WHERE LOWER(typeName) = "' . $db->sql_escape(strtolower($shipName)) . '"';
         $result = $db->sql_query($sql);
         $row = $db->sql_fetchrow($result);
         $db->sql_freeresult($result);
@@ -314,30 +314,6 @@ class Fitting
 		}
 		
 		return $shipInfo;
-	}
-	
-	private static function returnHTML($systemID, $systemName)
-	{
-		global $phpbb_root_path;
-		
-		if(!self::isWormhole($systemID))
-		{
-			$html =	'<a class="postlink">' . $systemName . '</a>&nbsp;&nbsp;' .
-					'<img src="'.$phpbb_root_path.'/images/eveonline_bbcode/information.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showInfo(5, '.$systemID.')" title="Information" />&nbsp;' .
-					'<img src="'.$phpbb_root_path.'/images/eveonline_bbcode/map.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showMap('.$systemID.')" title="Show on map" />&nbsp;';
-			
-			if($_SERVER['HTTP_EVE_TRUSTED'] == "Yes")
-			{
-				$html .=	'<img src="'.$phpbb_root_path.'/images/eveonline_bbcode/destination.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.setDestination('.$systemID.')" title="Set as destination" />&nbsp;' . 
-							'<img src="'.$phpbb_root_path.'/images/eveonline_bbcode/waypoint.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.addWaypoint('.$systemID.')" title="Add waypoint" />&nbsp;';
-			}
-		}
-		else
-		{
-			$html =	'<a class="postlink">' . $systemName . '</a>&nbsp;&nbsp;';
-		}
-		
-		return $html;
 	}
 }
 

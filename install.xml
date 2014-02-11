@@ -52,7 +52,6 @@
 			<file from="root/install/*.*" to="install/*.*" />
 			<file from="root/language/*.*" to="language/*.*" />
 			<file from="root/styles/prosilver/*.*" to="styles/prosilver/*.*" />
-			<file from="root/umil/*.*" to="umil/*.*" />
 		</copy>
 
 		<open src="includes/bbcode.php">
@@ -70,7 +69,7 @@
 				<action type="after-add"><![CDATA[				case 13:
 						$this->bbcode_cache[$bbcode_id] = array(
 								'preg'	=> array(
-										'#\[eveitem:$uid\]([0-9a-z \-':]+{1,75})\[/eveitem:$uid\]#ise'	=> "\$this->bbcode_second_pass_eveitem('\$1')"
+										'#\[eveitem:$uid\]([0-9a-z \-\'\:]{1,75})\[/eveitem:$uid\]#ise'	=> "\$this->bbcode_second_pass_eveitem('\$1')"
 								)
 						);
 				break;
@@ -78,7 +77,7 @@
 				case 14:
 						$this->bbcode_cache[$bbcode_id] = array(
 								'preg'	=> array(
-										'#\[evesystem:$uid\]([0-9a-z \-]+{1,20})\[/evesystem:$uid\]#ise'	=> "\$this->bbcode_second_pass_evesystem('\$1')"
+										'#\[evesystem:$uid\]([0-9a-z \-]{1,20})\[/evesystem:$uid\]#ise'	=> "\$this->bbcode_second_pass_evesystem('\$1')"
 								)
 						);
 				break;
@@ -86,7 +85,7 @@
 				case 15:
 						$this->bbcode_cache[$bbcode_id] = array(
 								'preg'	=> array(
-										'#\[evefit:$uid\]([a-z0-9 \-'\n\[\],\#:()]{1,1500})\[/evefit:$uid\]#ise'	=> "\$this->bbcode_second_pass_evefit('\$1')"
+										'#\[evefit:$uid\]([a-z0-9 \-\'\n\[\]\,\#\:\(\)]{1,1500})\[/evefit:$uid\]#ise'	=> "\$this->bbcode_second_pass_evefit('\$1')"
 								)
 						);
 				break; ]]></action>
@@ -131,7 +130,8 @@
     function bbcode_second_pass_evefit($fittingText)
     {
 		return EVEOnlineBBcode\Fitting::getFitting($fittingText);
-    }]]></action>
+    }
+	]]></action>
 			</edit>
 		</open>
 		<open src="includes/constants.php">
@@ -150,9 +150,9 @@
 			<edit>
 				<find><![CDATA[ 			'flash'			=> array('bbcode_id' => 11,	'regexp' => array('#\[flash=([0-9]+),([0-9]+)\](.*?)\[/flash\]#uie' => "\$this->bbcode_flash('\$1', '\$2', '\$3')")) ]]></find>
 				<action type="replace-with"><![CDATA[ 			'flash'			=> array('bbcode_id' => 11,	'regexp' => array('#\[flash=([0-9]+),([0-9]+)\](.*?)\[/flash\]#uie' => "\$this->bbcode_flash('\$1', '\$2', '\$3')")),
-			'eveitem'		=> array('bbcode_id' => 13,	'regexp' => array('#\[eveitem\]([0-9a-z \-']{1,75})\[/eveitem\]#ise' => "\$this->bbcode_eve_item('\$1')")),
+			'eveitem'		=> array('bbcode_id' => 13,	'regexp' => array('#\[eveitem\]([0-9a-z \-\']{1,75})\[/eveitem\]#ise' => "\$this->bbcode_eve_item('\$1')")),
 			'evesystem'		=> array('bbcode_id' => 14,	'regexp' => array('#\[evesystem\]([0-9a-z \-]{3,20})\[/evesystem\]#ise' => "\$this->bbcode_eve_system('\$1')")),
-			'evefit'		=> array('bbcode_id' => 15,	'regexp' => array('#\[evefit\]([0-9a-z \-'\n\[\],:\#\(\)]{5,1500})\[/evefit\]#ise' => "\$this->bbcode_eve_fit('\$1')"))
+			'evefit'		=> array('bbcode_id' => 15,	'regexp' => array('#\[evefit\]([0-9a-z \-\'\n\[\]\,\:\#\(\)]{5,1500})\[/evefit\]#ise' => "\$this->bbcode_eve_fit('\$1')"))
 ]]></action>
 			</edit>
 			<edit>
@@ -218,8 +218,8 @@
 			<edit>
 				<find><![CDATA[<link href="{T_THEME_PATH}/print.css" rel="stylesheet" type="text/css" media="print" title="printonly" />
 <link href="{T_STYLESHEET_LINK}" rel="stylesheet" type="text/css" media="screen, projection" />]]></find>
-				<action type="after-add"><![CDATA[<link href="{T_SUPER_TEMPLATE_PATH}/eveapi_fitting.css" rel="stylesheet" type="text/css" />
-<script src="{T_SUPER_TEMPLATE_PATH}/eveapi_fitting.js" type="text/javascript"></script>
+				<action type="after-add"><![CDATA[<link href="{T_SUPER_TEMPLATE_PATH}/eveonline_bbcode.css" rel="stylesheet" type="text/css" />
+<script src="{T_SUPER_TEMPLATE_PATH}/eveonline_bbcode.js" type="text/javascript"></script>
 <script type="text/javascript">
 	if (typeof CCPEVE != "undefined") {
 	  CCPEVE.requestTrust('{S_EVEAPI_TRUSTED}'); 
@@ -250,9 +250,9 @@
 } ]]></find>
 				<action type="after-add"><![CDATA[// EVE Online BBcode MOD start
 // Load classes for each BBcode
-require($phpbb_root_path . "/includes/eveonline_bbcode_item.php");
-require($phpbb_root_path . "/includes/eveonline_bbcode_system.php");
-//require($phpbb_root_path . "/includes/eveonline_bbcode_fitting.php");
+require($phpbb_root_path . "/includes/eveonline_bbcode/eveonline_bbcode_item.php");
+require($phpbb_root_path . "/includes/eveonline_bbcode/eveonline_bbcode_system.php");
+require($phpbb_root_path . "/includes/eveonline_bbcode/eveonline_bbcode_fitting.php");
 
 
 // EVE Online BBcode MOD end ]]></action>
