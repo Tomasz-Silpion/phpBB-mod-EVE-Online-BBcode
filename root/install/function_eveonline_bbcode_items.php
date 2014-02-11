@@ -9,7 +9,7 @@ function umil_eveonline_bbcode_insert_items()
 {
 	global $db, $table_prefix, $umil;
 
-	$umil->table_row_insert($table_prefix . 'eveonline_bbcode_items', array(
+	$umil->table_row_insert($table_prefix.'eveonline_bbcode_items', array(
 		array(
 			'itemID' => 18,
 			'itemName' => 'Plagioclase',

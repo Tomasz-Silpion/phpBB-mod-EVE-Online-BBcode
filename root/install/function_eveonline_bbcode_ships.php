@@ -9,7 +9,7 @@ function umil_eveonline_bbcode_insert_ships()
 {
 	global $db, $table_prefix, $umil;
 
-	$umil->table_row_insert($table_prefix . 'eveapi_ships', array(
+	$umil->table_row_insert($table_prefix.'eveonline_bbcode_ships', array(
 		array(
 			'typeID' => 582,
 			'typeName' => 'Bantam',

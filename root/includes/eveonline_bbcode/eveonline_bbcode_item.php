@@ -29,7 +29,7 @@ class Item
 {
 	public static function getItem($itemName)
 	{
-		$row = self::queryDatabase($itemName);
+		$row = self::getItemInfo($itemName);
 		
 		if($row && isset($_SERVER['HTTP_EVE_TRUSTED']))
 		{
@@ -41,7 +41,7 @@ class Item
 		}
 	}
 	
-	private static function queryDatabase($itemName)
+	private static function getItemInfo($itemName)
 	{
         global $db, $table_prefix;
 		

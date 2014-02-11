@@ -9,7 +9,7 @@ function umil_eveonline_bbcode_insert_systems()
 {
 	global $db, $table_prefix, $umil;
 	
-	$umil->table_row_insert($table_prefix . 'eveapi_systems', array(
+	$umil->table_row_insert($table_prefix.'eveonline_bbcode_systems', array(
 		array(
 			'systemID'  => 30000001,
 			'systemName'  => 'Tanoo',

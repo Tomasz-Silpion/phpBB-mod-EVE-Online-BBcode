@@ -31,6 +31,7 @@ if (!file_exists($phpbb_root_path . 'umil/umil_auto.' . $phpEx))
 require_once($phpbb_root_path . 'install/function_eveonline_bbcode_items.' . $phpEx);
 require_once($phpbb_root_path . 'install/function_eveonline_bbcode_ships.' . $phpEx);
 require_once($phpbb_root_path . 'install/function_eveonline_bbcode_systems.' . $phpEx);
+require_once($phpbb_root_path . 'install/function_eveonline_bbcode_subsystems.' . $phpEx);
 
 // The name of the mod to be displayed during installation.
 $mod_name = 'UMIL_EVEONLINE_BBCODE';
@@ -112,13 +113,13 @@ function umil_eveonline_bbcode_install_database()
 		'COLUMNS'		=> array(
 			'typeID'			=> array('INT:10', 0),
 			'typeName'			=> array('VCHAR:100', ''),
-			'Low'				=> array('TINT:2', 0),
-			'Medium'			=> array('TINT:2', 0),
-			'High'				=> array('TINT:2', 0),
-			'Drone'				=> array('TINT:2', 0),
-			'Rig'				=> array('TINT:2', 0),
-			'Subsystem'			=> array('TINT:2', 0),
-			'raceID'			=> array('TINT:2', 0),
+			'Low'				=> array('INT:2', 0),
+			'Medium'			=> array('INT:2', 0),
+			'High'				=> array('INT:2', 0),
+			'Drone'				=> array('INT:5', 0),
+			'Rig'				=> array('INT:2', 0),
+			'Subsystem'			=> array('INT:2', 0),
+			'raceID'			=> array('INT:2', 0),
 			'raceName'			=> array('VCHAR:20', ''),
 			'Tech'				=> array('VCHAR:10', ''),
 			'groupName'			=> array('VCHAR:50', ''),
@@ -140,6 +141,23 @@ function umil_eveonline_bbcode_install_database()
 		),
 		'PRIMARY_KEY'	=> 'systemID',
 	));
+	
+	// Subsystems
+	if ($umil->table_exists($table_prefix . 'eveonline_bbcode_subsystems'))
+	{
+		$umil->table_remove($table_prefix . 'eveonline_bbcode_subsystems');
+	}
+	$umil->table_add($table_prefix . 'eveonline_bbcode_subsystems', array(
+		'COLUMNS'		=> array(
+			'typeID'			=> array('INT:10', 0),
+			'typeName'			=> array('VCHAR:100', ''),
+			'Low'				=> array('INT:2', 0),
+			'Medium'			=> array('INT:2', 0),
+			'High'				=> array('INT:2', 0),
+			'Drone'				=> array('INT:5', 0),
+		),
+		'PRIMARY_KEY'	=> 'typeID',
+	));
 
 	// Fill Items table with data.
 	umil_eveonline_bbcode_insert_items();
@@ -149,6 +167,9 @@ function umil_eveonline_bbcode_install_database()
 
 	// Fill Systems table with data.
 	umil_eveonline_bbcode_insert_systems();
+	
+	// Fill Subsystems table with data.
+	umil_eveonline_bbcode_insert_subsystems();
 }
 
 /*
@@ -174,6 +195,12 @@ function umil_eveonline_bbcode_remove_database()
 	if ($umil->table_exists($table_prefix . 'eveonline_bbcode_systems'))
 	{
 		$umil->table_remove($table_prefix . 'eveonline_bbcode_systems');
+	}
+	
+	// Subsystem
+	if ($umil->table_exists($table_prefix . 'eveonline_bbcode_subsystems'))
+	{
+		$umil->table_remove($table_prefix . 'eveonline_bbcode_subsystems');
 	}
 }
 // </editor-fold>
