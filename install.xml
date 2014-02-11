@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml-stylesheet type="text/xsl" href="modx.prosilver.en.xsl"?>
+<!--For security purposes, please check: http://www.phpbb.com/mods/ for the latest version of this MOD. Although MODs are checked before being allowed in the MODs Database there is no guarantee that there are no security problems within the MOD. No support will be given for MODs not found within the MODs Database which can be found at http://www.phpbb.com/mods/-->
+<mod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://www.phpbb.com/mods/xml/modx-1.2.6.xsd">
+	<header>
+		<license>http://opensource.org/licenses/MIT The MIT License (MIT)</license>
+
+		<title lang="en">EVE Online BBcode for phpBB mod, v0.1.0</title>
+
+		<description lang="en">This file contains the instructions for the installation of the EVE Online BBcode for phpBB mod</description>
+
+		<author-notes lang="en"></author-notes>
+
+		<author-group>
+			<author>
+				<realname>Jordy Wille</realname>
+				<username phpbbcom="no">Cyerus</username>
+				<homepage>https://eve-it.org</homepage>
+      		<contributions-group>
+      		  <contributions status="current" from="2010-07-10" position="Developer"/>
+      		</contributions-group>
+			</author>
+		</author-group>
+
+		<mod-version>0.1.0</mod-version>
+
+		<installation>
+			<level>easy</level>
+			<time>60</time>
+			<target-version>3.0.12</target-version>
+		</installation>
+
+		<history>
+			<entry>
+				<date>2014-02-11</date>
+				<rev-version>0.1.0</rev-version>
+				<changelog lang="en">
+					<change>Initial commit, split from original package for easy maintainance and a more focussed approach.</change>
+				</changelog>
+			</entry>
+		</history>
+
+		<link-group>
+			<link type="template" lang="en" href="contrib/subsilver2.xml">Edits meant for subsilver2 style</link>
+		</link-group>
+	</header>
+
+	<action-group>
+		<copy>
+			<!--<file from="root/images/*.*" to="images/*.*" />
+			<file from="root/includes/*.*" to="includes/*.*" />
+			<file from="root/install/*.*" to="install/*.*" />
+			<file from="root/language/*.*" to="language/*.*" />
+			<file from="root/styles/prosilver/*.*" to="styles/prosilver/*.*" />
+			<file from="root/umil/*.*" to="umil/*.*" />-->
+		</copy>
+
+		<open src="includes/bbcode.php">
+			<edit>
+				<find><![CDATA[				case 12:
+					$this->bbcode_cache[$bbcode_id] = array(
+						'str'	=> array(
+							'[/attachment:$uid]'	=> $this->bbcode_tpl('inline_attachment_close', $bbcode_id)
+						),
+						'preg'	=> array(
+							'#\[attachment=([0-9]+):$uid\]#'	=> $this->bbcode_tpl('inline_attachment_open', $bbcode_id)
+						)
+					);
+				break;]]></find>
+				<action type="after-add"><![CDATA[				case 13:
+						$this->bbcode_cache[$bbcode_id] = array(
+								'preg'	=> array(
+										'#\[eveitem:$uid\]([0-9A-Za-z \-\'\:]{1,75})\[/eveitem:$uid\]#ise'	=> "\$this->bbcode_second_pass_eveitem('\$1')"
+								)
+						);
+				break;
+
+				case 14:
+						$this->bbcode_cache[$bbcode_id] = array(
+								'preg'	=> array(
+										'#\[evesystem:$uid\]([A-Za-z0-9 \-]{1,20})\[/evesystem:$uid\]#ise'	=> "\$this->bbcode_second_pass_evesystem('\$1')"
+								)
+						);
+				break;
+			
+				case 15:
+						$this->bbcode_cache[$bbcode_id] = array(
+								'preg'	=> array(
+										'#\[evefit:$uid\]([A-Za-z0-9 \-\'\n\[\]\,\#\:\(\)]{1,1500})\[/evefit:$uid\]#ise'	=> "\$this->bbcode_second_pass_evefit('\$1')"
+								)
+						);
+				break; ]]></action>
+			</edit>
+			<edit>
+				<find><![CDATA[	function bbcode_second_pass_quote($username, $quote)
+	{
+		// when using the /e modifier, preg_replace slashes double-quotes but does not
+		// seem to slash anything else
+		$quote = str_replace('\"', '"', $quote);
+		$username = str_replace('\"', '"', $username);
+
+		// remove newline at the beginning
+		if ($quote == "\n")
+		{
+			$quote = '';
+		}
+
+		$quote = (($username) ? str_replace('$1', $username, $this->bbcode_tpl('quote_username_open')) : $this->bbcode_tpl('quote_open')) . $quote;
+
+		return $quote;
+	}]]></find>
+                                <action type="after-add"><![CDATA[    /**
+    * EVE IGB item linker
+    */
+    function bbcode_second_pass_eveitem($itemname)
+    {
+        global $db, $phpbb_root_path;
+
+        $sql = 'SELECT *
+                FROM eveapi_items
+                WHERE LOWER(itemName) = "' . $db->sql_escape(strtolower($itemname)) . '"';
+        $result = $db->sql_query($sql);
+        $row = $db->sql_fetchrow($result);
+        $db->sql_freeresult($result);
+
+        $preview_array = array(2,6,18,23,40);
+        $return_string = $itemname;
+
+        if($row)
+        {
+            $return_string = '<a class="postlink">' . $row['itemName'] . '</a>&nbsp;&nbsp;' .
+                            '<img src="' . $phpbb_root_path . '/images/eve/information.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showInfo(' . $row['itemID'] . ')" title="Information" />&nbsp;';
+
+            $return_string .= '<img src="' . $phpbb_root_path . '/images/eve/market.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showMarketDetails(' . $row['itemID'] . ')" title="Market details" />&nbsp;';
+
+            if(in_array($row['categoryID'], $preview_array))
+            {
+                $return_string .= '<img src="' . $phpbb_root_path . '/images/eve/preview.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showPreview(' . $row['itemID'] . ')" title="Preview" />&nbsp;';
+            }
+        }
+
+        return $return_string;
+    }
+
+    /**
+    * EVE IGB system linker
+    */
+    function bbcode_second_pass_evesystem($systemname)
+    {
+        global $db, $phpbb_root_path;
+
+        $return_string = $systemname;
+        $upper_systemname = strtoupper($systemname);
+
+        if (preg_match("([A-Z]{1}[A-Z\-]+[A-Z]{1})", $upper_systemname) || preg_match("(J[0-9][\-1]{6,8})", $upper_systemname) || preg_match("([A-Z0-9]{1}\-[A-Z0-9]{4}|[A-Z0-9]{2}\-[A-Z0-9]{3}|[A-Z0-9]{3}\-[A-Z0-9]{2}|[A-Z0-9]{4}\-[A-Z0-9]{1})", $upper_systemname))
+        {
+            $sql = 	'SELECT *
+                        FROM eveapi_systems
+                        WHERE LOWER(systemName) = "' . $db->sql_escape(strtolower($systemname)) . '"';
+            $result = $db->sql_query($sql);
+            $row = $db->sql_fetchrow($result);
+            $db->sql_freeresult($result);
+
+            $return_string = "";
+
+            if($row)
+            {
+                if(!preg_match("(J[0-9]{6}[\-1]{0,2})", $row['systemName']))
+                {
+                    $return_string =    '<a class="postlink">' . $row['systemName'] . '</a>&nbsp;&nbsp;' .
+                                        '<img src="' . $phpbb_root_path . '/images/eve/information.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showInfo(5, ' . $row['systemID'] . ')" title="Information" />&nbsp;' .
+                                        '<img src="' . $phpbb_root_path . '/images/eve/destination.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.setDestination(' . $row['systemID'] . ')" title="Set as destination" />&nbsp;' .
+                                        '<img src="' . $phpbb_root_path . '/images/eve/map.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showMap(' . $row['systemID'] . ')" title="Show on map" />&nbsp;' .
+                                        '<img src="' . $phpbb_root_path . '/images/eve/waypoint.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.addWaypoint(' . $row['systemID'] . ')" title="Add waypoint" />&nbsp;';
+                }
+                else
+                {
+                    $return_string = '<a class="postlink">' . $row['systemName'] . '</a>&nbsp;';
+                }
+            }
+        }
+
+        return $return_string;
+    }
+
+    /**
+    * EVE Fitting
+    */
+    function bbcode_second_pass_evefit($fitting)
+    {
+        global $db, $config;
+
+        $eveapi_fittingSlotType = array(
+            "Low",
+            "Medium",
+            "High",
+            "Rig",
+            "Subsystem",
+            "Drone"
+        );
+
+        $eveapi_eftSlotType = array(
+            "low",
+            "med",
+            "high",
+            "rig",
+            "subsystem",
+            "drone"
+        );
+
+        $fitting_array = array();
+        $slotType = 0;
+        $slotCounter = 0;
+
+        $fitting_rows = explode("\n", $fitting);
+        foreach($fitting_rows as $key => $row)
+        {
+            if(!$key)
+            {
+                $fittingInfo = explode(',', preg_replace('/(\[|\])/','',$row));
+                $shipName = $fittingInfo[0];
+                $fittingDescription = htmlentities(trim($fittingInfo[1]));
+
+                $result = $db->sql_query('SELECT * FROM eveapi_ships WHERE LOWER(typeName) = "' . $db->sql_escape(strtolower($shipName)) . '"');
+                $shipDetails = $db->sql_fetchrow($result);
+                $db->sql_freeresult($result);
+
+                // Hotfix for Strategic Cruisers, since their slot layout if based on Subsystems.
+                // TODO: Correctly calculate slots based on Subsystems.
+                if($shipDetails['groupName'] == "Strategic Cruiser")
+                {
+                    $shipDetails['Low'] = 8;
+                    $shipDetails['Medium'] = 8;
+                    $shipDetails['High'] = 8;
+                    $shipDetails['Rig'] = 3;
+                    $shipDetails['Subsystem'] = 5;
+                    $shipDetails['Drone'] = 4;
+                }
+
+                // Hotfix that checks if selected ship has drone bandwidth (so it can hold and use drones), then (incorrectly) converting it to space for 4 different types of drones (since the fitting window has 4 spots).
+                if($shipDetails['Drone'] > 0)
+                {
+                    $shipDetails['Drone'] = 4;
+                }
+
+                continue;
+            }
+
+            // Empty lines means we need to switch to different slottype (from lowslot to midslot for example).
+            if(empty($row))
+            {
+                if($slotCounter < $shipDetails[$eveapi_fittingSlotType[$slotType]])
+                {
+                    for($slotCounter; $slotCounter < $shipDetails[$eveapi_fittingSlotType[$slotType]]; $slotCounter++)
+                    {
+                        $fitting_array[$eveapi_fittingSlotType[$slotType]][] = false;
+                    }
+                }
+
+                $slotType++;
+                $slotCounter = 0;
+
+                continue;
+            }
+
+            // Sometimes empty itemslots are identified this way.
+            if($row == "[empty " . $eveapi_eftSlotType[$slotType] . " slot]")
+            {
+                $fitting_array[$eveapi_fittingSlotType[$slotType]][] = false;
+
+                $slotCounter++;
+                continue;
+            }
+
+            if($slotCounter >= $shipDetails[$eveapi_fittingSlotType[$slotType]])
+            {
+                // Ignore any items posted beyond the maximum amount of slots of this type the ship has.
+                continue;
+            }
+            else
+            {
+                // Add item to the array we'll be looping below.
+                // All the junk should be weeded out by now (at least I hope so).
+                $fitting_array[$eveapi_fittingSlotType[$slotType]][] = trim($row);
+
+                $slotCounter++;
+            }
+        }
+
+        $temp_fitting_output = "";
+        $ingameFittingLink = array();
+
+        //Produce fit display
+        foreach($fitting_array as $slot => $positions)
+        {
+            foreach($positions as $position => $row)
+            {
+                if(!$row)
+                {
+                    // Empty slot, so add the empty slot icon for this type of slot.
+                    $temp_fitting_output .= '<div id="' . $slot . ($position + 1) . '"><img border="0" title="Empty ' . ucfirst($slot) . ' Slot" src="images/eve/' . $slot . '_32.png"></div>';
+                }
+                else
+                {
+                    // Check if the lines has a comma, meaning it probably holds ammo/script
+                    if(strpos($row, ','))
+                    {
+                        // Split the line, creating an array with [0] holding weapon/module and [1] holding ammo/script
+                        $splitRow = explode(',', $row);
+                        $itemName = trim($splitRow[0]);
+                        $ammoName = trim($splitRow[1]);
+
+                        // Even though a comma might be used, there might not be anything after it.
+                        if(!empty($ammoName))
+                        {
+                            // Search the item in the database; mainly to receive it's itemID needed for it's icon.
+                            $result = $db->sql_query('SELECT * FROM eveapi_items WHERE LOWER(itemName) = "' . $db->sql_escape(strtolower($ammoName)) . '"');
+                            $row = $db->sql_fetchrow($result);
+                            $db->sql_freeresult($result);
+
+                            // No result? Item not found.
+                            if(!$row)
+                            {
+                                $temp_fitting_output .= '<div id="' . $slot . 'charge' . ($position + 1) . '"><img border="0" title="Unrecognized item" src="images/eve/questionmark.png"></div>';
+                            }
+                            else
+                            {
+                                // Item found, so add the correct clickable icon.
+                                $temp_fitting_output .= '<div id="' . $slot . 'charge' . ($position + 1) . '"><img border="0" title="' . htmlentities($row['itemName']) . '" src="http://image.eveonline.com/Type/' . $row['itemID'] . '_32.png" onclick="CCPEVE.showInfo(' . $row['itemID'] . ')"  onmouseover="this.style.cursor=\'pointer\'"></div>';
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // No comma found, so the itemname consists of the whole line.
+                        $itemName = $row;
+                    }
+
+                    // Drones can sometimes have the amount of them added behind them, like 'Ogre II x5'.
+                    if($slot == 'Drone')
+                    {
+                        // Remove the x5 to get the correct itemname back.
+                        $itemName = trim(preg_replace('/x[\d]+/', '', $itemName));
+                    }
+
+                    // After all the validation and correction, it's finally time to search for the module.
+                    $result = $db->sql_query('SELECT * FROM eveapi_items WHERE LOWER(itemName) = "' . $db->sql_escape(strtolower($itemName)) . '"');
+                    $row = $db->sql_fetchrow($result);
+                    $db->sql_freeresult($result);
+
+                    // No result? Item not found.
+                    if(!$row)
+                    {
+                        $temp_fitting_output .= '<div id="' . $slot . ($position + 1) . '"><img border="0" title="Unrecognized item" src="images/eve/questionmark.png"></div>';
+                    }
+                    else
+                    {
+                        // Item found, so add the correct clickable icon.
+                        $temp_fitting_output .= '<div id="' . $slot . ($position + 1) . '"><img border="0" title="' . htmlentities($row['itemName']) . '" src="http://image.eveonline.com/Type/' . $row['itemID'] . '_32.png" onclick="CCPEVE.showInfo(' . $row['itemID'] . ')" onmouseover="this.style.cursor=\'pointer\'"></div>';
+
+                        // Update or reset the slot number, so the next items is placed in the next slot.
+                        $stringSlot = (string) $slot;
+                        if(!isset($ingameFittingLink[$stringSlot][$row['itemID']]))
+                        {
+                            $ingameFittingLink[$stringSlot][$row['itemID']] = 0;
+                        }
+                        $ingameFittingLink[$stringSlot][$row['itemID']]++;
+                    }
+                }
+            }
+        }
+
+        // Build ingame fitting link
+        $ingameLink = "CCPEVE.showFitting('" . $shipDetails['typeID'];
+        $ingameLink .= eveapi_ingameLinkLoop($ingameFittingLink, "Subsystem");
+        $ingameLink .= eveapi_ingameLinkLoop($ingameFittingLink, "High");
+        $ingameLink .= eveapi_ingameLinkLoop($ingameFittingLink, "Medium");
+        $ingameLink .= eveapi_ingameLinkLoop($ingameFittingLink, "Low");
+        $ingameLink .= eveapi_ingameLinkLoop($ingameFittingLink, "Rig");
+        $ingameLink .= eveapi_ingameLinkLoop($ingameFittingLink, "Drone");
+        $ingameLink .= "::');";
+
+        // Start fitting
+        $fitting_output = '<div id="fittitle"><h4>' . htmlentities($shipDetails['typeName']) . ' - ' . htmlentities($fittingDescription) . '</h4></div>';
+        $fitting_output .= '<div id="fitting_container">';
+        $fitting_output .= '<div class="fitting_tabs"><ul class="fit-tabs"><li class="fit-tab" onclick="chooseTab(this,\'loadout\');" onmouseover="this.style.cursor=\'pointer\'">Loadout</li><li class="fit-tab" onclick="chooseTab(this,\'export\');" onmouseover="this.style.cursor=\'pointer\'">Export</li><li class="fit-tab" onclick="' . $ingameLink . '" onmouseover="this.style.cursor=\'pointer\'">Ingame Fitting</li></ul><div style="clear:both;"></div></div>';
+        $fitting_output .= '<div id="fittext" style="display:none;"><textarea readonly="readonly">' . htmlentities(str_replace("\n", "\r", $fitting)) . '</textarea></div>';
+        $fitting_output .= '<div title="fitting" id="fitting">';
+
+        // Fitting window
+        $fitting_output .= '<div id="fittingwindow"><img border="0" alt="" src="images/eve/fitting_panel.png"></div>';
+        $fitting_output .= '<div id="shiprace"><img border="0" alt="" title="' . $shipDetails['Icon'] . '" src="images/eve/races/' . $shipDetails['Icon'] . '.png"></div>';
+        $fitting_output .= '<div id="shipicon"><img border="0" alt="" title="' . $shipDetails['Tech'] . ' - ' . $shipDetails['groupName'] . ' - ' . htmlentities($shipDetails['typeName']) . '" src="http://image.eveonline.com/Render/' . $shipDetails['typeID'] . '_64.png" onclick="CCPEVE.showInfo(' . $shipDetails['typeID'] . ')" onmouseover="this.style.cursor=\'pointer\'"></div>';
+
+        // Actual fitting, whereas $temp_fitting_output is holding all the slot information looped above.
+        $fitting_output .= $temp_fitting_output;
+
+        // End fitting
+        $fitting_output .= '</div></div>';
+
+        return $fitting_output;
+    }]]></action>
+			</edit>
+		</open>
+		<open src="includes/constants.php">
+			<edit>
+				<find><![CDATA[define('NUM_CORE_BBCODES', 12); ]]></find>
+				<action type="replace-with"><![CDATA[define('NUM_CORE_BBCODES', 15);]]></action>
+			</edit>
+		</open>
+		<open src="includes/functions_display.php">
+			<edit>
+				<find><![CDATA[	$num_predefined_bbcodes = 22; ]]></find>
+				<action type="replace-with"><![CDATA[	$num_predefined_bbcodes = 28;]]></action>
+			</edit>
+		</open>
+		<open src="includes/message_parser.php">
+			<edit>
+				<find><![CDATA[ 			'flash'			=> array('bbcode_id' => 11,	'regexp' => array('#\[flash=([0-9]+),([0-9]+)\](.*?)\[/flash\]#uie' => "\$this->bbcode_flash('\$1', '\$2', '\$3')")) ]]></find>
+				<action type="replace-with"><![CDATA[ 			'flash'			=> array('bbcode_id' => 11,	'regexp' => array('#\[flash=([0-9]+),([0-9]+)\](.*?)\[/flash\]#uie' => "\$this->bbcode_flash('\$1', '\$2', '\$3')")),
+			'eveitem'		=> array('bbcode_id' => 13,	'regexp' => array('#\[eveitem\]([0-9A-Za-z \-\']{1,75})\[/eveitem\]#ise' => "\$this->bbcode_eve_item('\$1')")),
+			'evesystem'		=> array('bbcode_id' => 14,	'regexp' => array('#\[evesystem\]([A-Za-z0-9 \-]{1,20})\[/evesystem\]#ise' => "\$this->bbcode_eve_system('\$1')")),
+			'evefit'		=> array('bbcode_id' => 15,	'regexp' => array('#\[evefit\]([A-Za-z0-9 \-\'\n\[\]\,\:\#\(\)]{1,1500})\[/evefit\]#ise' => "\$this->bbcode_eve_fit('\$1')"))
+]]></action>
+			</edit>
+			<edit>
+				<find><![CDATA[	/**
+	* Parse inline attachments [ia]
+	*/
+	function bbcode_attachment($stx, $in)
+	{
+		if (!$this->check_bbcode('attachment', $in))
+		{
+			return $in;
+		}
+
+		return '[attachment=' . $stx . ':' . $this->bbcode_uid . ']<!-- ia' . $stx . ' -->' . trim($in) . '<!-- ia' . $stx . ' -->[/attachment:' . $this->bbcode_uid . ']';
+	}]]></find>
+				<action type="after-add"><![CDATA[    /**
+    * EVE ITEM BBcode
+    */
+    function bbcode_eve_item($in)
+    {
+        if (!$this->check_bbcode('eveitem', $in))
+        {
+            return $in;
+        }
+
+        return '[eveitem:' . $this->bbcode_uid . ']' . $in . '[/eveitem:' . $this->bbcode_uid . ']';
+    }
+
+    /**
+    * EVE SYSTEM BBcode
+    */
+    function bbcode_eve_system($in)
+    {
+        if (!$this->check_bbcode('evesystem', $in))
+        {
+            return $in;
+        }
+
+        return '[evesystem:' . $this->bbcode_uid . ']' . $in . '[/evesystem:' . $this->bbcode_uid . ']';
+    }
+
+    /**
+    * EVE FITTING BBcode
+    */
+    function bbcode_eve_fit($in)
+    {
+        if (!$this->check_bbcode('evefit', $in))
+        {
+            return $in;
+        }
+
+        return '[evefit:' . $this->bbcode_uid . ']' . $in . '[/evefit:' . $this->bbcode_uid . ']';
+    } ]]></action>
+			</edit>
+		</open>
+		<!--<open src="styles/prosilver/template/overall_footer.html">
+			<edit>
+				<find><![CDATA[	<div class="copyright">{CREDIT_LINE}]]></find>
+				<action type="replace-with"><![CDATA[	<div class="copyright">{CREDIT_LINE}  &#166; Powered by <a href="https://forums.eveonline.com/default.aspx?g=posts&m=184934">EVE API v6.3.1 for phpBB 3.x</a> - <a href="#" onclick="CCPEVE.showInfo(1377, 1934722728)">Cyerus</a>]]></action>
+			</edit>
+		</open>-->
+		<open src="styles/prosilver/template/overall_header.html">
+			<edit>
+				<find><![CDATA[<link href="{T_THEME_PATH}/print.css" rel="stylesheet" type="text/css" media="print" title="printonly" />
+<link href="{T_STYLESHEET_LINK}" rel="stylesheet" type="text/css" media="screen, projection" />]]></find>
+				<action type="after-add"><![CDATA[<link href="{T_SUPER_TEMPLATE_PATH}/eveapi_fitting.css" rel="stylesheet" type="text/css" />
+<script src="{T_SUPER_TEMPLATE_PATH}/eveapi_fitting.js" type="text/javascript"></script>
+<script type="text/javascript">
+	if (typeof CCPEVE != "undefined") {
+	  CCPEVE.requestTrust('{S_EVEAPI_TRUSTED}'); 
+	}
+</script>]]></action>
+			</edit>
+		</open>
+		<open src="styles/prosilver/template/posting_buttons.html">
+			<edit>
+				<find><![CDATA[	var bbtags = new Array('[b]','[/b]','[i]','[/i]','[u]','[/u]','[quote]','[/quote]','[code]','[/code]','[list]','[/list]','[list=]','[/list]','[img]','[/img]','[url]','[/url]','[flash=]', '[/flash]','[size=]','[/size]'<!-- BEGIN custom_tags -->, {custom_tags.BBCODE_NAME}<!-- END custom_tags -->); ]]></find>
+				<action type="replace-with"><![CDATA[	var bbtags = new Array('[b]','[/b]','[i]','[/i]','[u]','[/u]','[quote]','[/quote]','[code]','[/code]','[list]','[/list]','[list=]','[/list]','[img]','[/img]','[url]','[/url]','[flash=]', '[/flash]','[size=]','[/size]', '[eveitem]', '[/eveitem]', '[evesystem]', '[/evesystem]', '[evefit]', '[/evefit]'<!-- BEGIN custom_tags -->, {custom_tags.BBCODE_NAME}<!-- END custom_tags -->);]]></action>
+			</edit>
+			<edit>
+				<find><![CDATA[	<!-- IF S_BBCODE_FLASH -->
+		<input type="button" class="button2" accesskey="d" name="addbbcode18" value="Flash" onclick="bbstyle(18)" title="{L_BBCODE_D_HELP}" />
+	<!-- ENDIF -->]]></find>
+				<action type="after-add"><![CDATA[ 	<input type="button" class="button2" accesskey="eveitem" name="addbbcode22" value="EVE Item" onclick="bbstyle(22)" title="EVE Item" />
+	<input type="button" class="button2" accesskey="evesystem" name="addbbcode24" value="EVE System" onclick="bbstyle(24)" title="EVE System" />
+    <input type="button" class="button2" accesskey="evefit" name="addbbcode26" value="EVE Fitting" onclick="bbstyle(26)" title="EVE Fitting" />
+]]></action>
+			</edit>
+		</open>
+		<!--<open src="common.php">
+			<edit>
+				<find><![CDATA[ foreach ($cache->obtain_hooks() as $hook)
+{
+	@include($phpbb_root_path . 'includes/hooks/' . $hook . '.' . $phpEx);
+} ]]></find>
+				<action type="after-add"><![CDATA[// EVE API start
+// Moved above masterswitch to avoid errors trying to use EVE BBcodes without having masterswitch enabled
+require($phpbb_root_path . "/includes/eveapi/functions_eveapi.php");
+	
+// Load PHEAL				
+require($phpbb_root_path . "/includes/eveapi/Pheal/Pheal.php");
+spl_autoload_register("Pheal::classload");
+PhealConfig::getInstance()->http_user_agent = "EVE API for phpBB 3.x (phpBB 3.x; Pheal)";
+					
+// Load TeamSpeak3 PHP Framework
+require($phpbb_root_path . "/includes/eveapi/TeamSpeak3/TeamSpeak3.php");
+					
+// Load OpenFireUserService class
+require($phpbb_root_path . "/includes/eveapi/OpenFireUserService/OpenFireUserService.php");
+
+// EVE API end ]]></action>
+			</edit>
+		</open>-->
+                
+		<diy-instructions lang="en"><![CDATA[--------------------------------------------------------------------------------------------
+
+		Browse to install/ and run the installer
+
+		Clear your cache in the "Administration Control Panel" (ACP) > "General" > "Purge the cache"
+
+		Refresh your Styles:
+		"Administration Control Panel" (ACP) > "Styles" > "Templates" > each > "refresh"
+		"Administration Control Panel" (ACP) > "Styles" > "Themes" > each > "refresh"
+		"Administration Control Panel" (ACP) > "Styles" > "Imagesets" > each > "refresh"
+
+		--------------------------------------------------------------------------------------------]]></diy-instructions>
+		
+	</action-group>
+</mod>
