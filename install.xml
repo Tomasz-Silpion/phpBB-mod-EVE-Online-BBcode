@@ -48,11 +48,11 @@
 	<action-group>
 		<copy>
 			<file from="root/images/*.*" to="images/*.*" />
-			<!--<file from="root/includes/*.*" to="includes/*.*" />
+			<file from="root/includes/*.*" to="includes/*.*" />
 			<file from="root/install/*.*" to="install/*.*" />
 			<file from="root/language/*.*" to="language/*.*" />
 			<file from="root/styles/prosilver/*.*" to="styles/prosilver/*.*" />
-			<file from="root/umil/*.*" to="umil/*.*" />-->
+			<file from="root/umil/*.*" to="umil/*.*" />
 		</copy>
 
 		<open src="includes/bbcode.php">
@@ -70,7 +70,7 @@
 				<action type="after-add"><![CDATA[				case 13:
 						$this->bbcode_cache[$bbcode_id] = array(
 								'preg'	=> array(
-										'#\[eveitem:$uid\]([0-9A-Za-z \-\'\:]{1,75})\[/eveitem:$uid\]#ise'	=> "\$this->bbcode_second_pass_eveitem('\$1')"
+										'#\[eveitem:$uid\]([0-9a-z \-':]+{1,75})\[/eveitem:$uid\]#ise'	=> "\$this->bbcode_second_pass_eveitem('\$1')"
 								)
 						);
 				break;
@@ -78,7 +78,7 @@
 				case 14:
 						$this->bbcode_cache[$bbcode_id] = array(
 								'preg'	=> array(
-										'#\[evesystem:$uid\]([A-Za-z0-9 \-]{1,20})\[/evesystem:$uid\]#ise'	=> "\$this->bbcode_second_pass_evesystem('\$1')"
+										'#\[evesystem:$uid\]([0-9a-z \-]+{1,20})\[/evesystem:$uid\]#ise'	=> "\$this->bbcode_second_pass_evesystem('\$1')"
 								)
 						);
 				break;
@@ -86,7 +86,7 @@
 				case 15:
 						$this->bbcode_cache[$bbcode_id] = array(
 								'preg'	=> array(
-										'#\[evefit:$uid\]([A-Za-z0-9 \-\'\n\[\]\,\#\:\(\)]{1,1500})\[/evefit:$uid\]#ise'	=> "\$this->bbcode_second_pass_evefit('\$1')"
+										'#\[evefit:$uid\]([a-z0-9 \-'\n\[\],\#:()]{1,1500})\[/evefit:$uid\]#ise'	=> "\$this->bbcode_second_pass_evefit('\$1')"
 								)
 						);
 				break; ]]></action>
@@ -109,78 +109,20 @@
 
 		return $quote;
 	}]]></find>
-                                <action type="after-add"><![CDATA[    /**
+	<action type="after-add"><![CDATA[    /**
     * EVE IGB item linker
     */
-    function bbcode_second_pass_eveitem($itemname)
+    function bbcode_second_pass_eveitem($itemName)
     {
-        global $db, $phpbb_root_path;
-
-        $sql = 'SELECT *
-                FROM eveapi_items
-                WHERE LOWER(itemName) = "' . $db->sql_escape(strtolower($itemname)) . '"';
-        $result = $db->sql_query($sql);
-        $row = $db->sql_fetchrow($result);
-        $db->sql_freeresult($result);
-
-        $preview_array = array(2,6,18,23,40);
-        $return_string = $itemname;
-
-        if($row)
-        {
-            $return_string = '<a class="postlink">' . $row['itemName'] . '</a>&nbsp;&nbsp;' .
-                            '<img src="' . $phpbb_root_path . '/images/eve/information.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showInfo(' . $row['itemID'] . ')" title="Information" />&nbsp;';
-
-            $return_string .= '<img src="' . $phpbb_root_path . '/images/eve/market.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showMarketDetails(' . $row['itemID'] . ')" title="Market details" />&nbsp;';
-
-            if(in_array($row['categoryID'], $preview_array))
-            {
-                $return_string .= '<img src="' . $phpbb_root_path . '/images/eve/preview.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showPreview(' . $row['itemID'] . ')" title="Preview" />&nbsp;';
-            }
-        }
-
-        return $return_string;
+		return EVEOnlineBBcode\Item::getItem($itemName);
     }
 
     /**
     * EVE IGB system linker
     */
-    function bbcode_second_pass_evesystem($systemname)
+    function bbcode_second_pass_evesystem($systemName)
     {
-        global $db, $phpbb_root_path;
-
-        $return_string = $systemname;
-        $upper_systemname = strtoupper($systemname);
-
-        if (preg_match("([A-Z]{1}[A-Z\-]+[A-Z]{1})", $upper_systemname) || preg_match("(J[0-9][\-1]{6,8})", $upper_systemname) || preg_match("([A-Z0-9]{1}\-[A-Z0-9]{4}|[A-Z0-9]{2}\-[A-Z0-9]{3}|[A-Z0-9]{3}\-[A-Z0-9]{2}|[A-Z0-9]{4}\-[A-Z0-9]{1})", $upper_systemname))
-        {
-            $sql = 	'SELECT *
-                        FROM eveapi_systems
-                        WHERE LOWER(systemName) = "' . $db->sql_escape(strtolower($systemname)) . '"';
-            $result = $db->sql_query($sql);
-            $row = $db->sql_fetchrow($result);
-            $db->sql_freeresult($result);
-
-            $return_string = "";
-
-            if($row)
-            {
-                if(!preg_match("(J[0-9]{6}[\-1]{0,2})", $row['systemName']))
-                {
-                    $return_string =    '<a class="postlink">' . $row['systemName'] . '</a>&nbsp;&nbsp;' .
-                                        '<img src="' . $phpbb_root_path . '/images/eve/information.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showInfo(5, ' . $row['systemID'] . ')" title="Information" />&nbsp;' .
-                                        '<img src="' . $phpbb_root_path . '/images/eve/destination.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.setDestination(' . $row['systemID'] . ')" title="Set as destination" />&nbsp;' .
-                                        '<img src="' . $phpbb_root_path . '/images/eve/map.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.showMap(' . $row['systemID'] . ')" title="Show on map" />&nbsp;' .
-                                        '<img src="' . $phpbb_root_path . '/images/eve/waypoint.png" onmouseover="this.style.cursor=\'pointer\'" onclick="CCPEVE.addWaypoint(' . $row['systemID'] . ')" title="Add waypoint" />&nbsp;';
-                }
-                else
-                {
-                    $return_string = '<a class="postlink">' . $row['systemName'] . '</a>&nbsp;';
-                }
-            }
-        }
-
-        return $return_string;
+		return EVEOnlineBBcode\System::getSystem($systemName);
     }
 
     /**
@@ -418,9 +360,9 @@
 			<edit>
 				<find><![CDATA[ 			'flash'			=> array('bbcode_id' => 11,	'regexp' => array('#\[flash=([0-9]+),([0-9]+)\](.*?)\[/flash\]#uie' => "\$this->bbcode_flash('\$1', '\$2', '\$3')")) ]]></find>
 				<action type="replace-with"><![CDATA[ 			'flash'			=> array('bbcode_id' => 11,	'regexp' => array('#\[flash=([0-9]+),([0-9]+)\](.*?)\[/flash\]#uie' => "\$this->bbcode_flash('\$1', '\$2', '\$3')")),
-			'eveitem'		=> array('bbcode_id' => 13,	'regexp' => array('#\[eveitem\]([0-9A-Za-z \-\']{1,75})\[/eveitem\]#ise' => "\$this->bbcode_eve_item('\$1')")),
-			'evesystem'		=> array('bbcode_id' => 14,	'regexp' => array('#\[evesystem\]([A-Za-z0-9 \-]{1,20})\[/evesystem\]#ise' => "\$this->bbcode_eve_system('\$1')")),
-			'evefit'		=> array('bbcode_id' => 15,	'regexp' => array('#\[evefit\]([A-Za-z0-9 \-\'\n\[\]\,\:\#\(\)]{1,1500})\[/evefit\]#ise' => "\$this->bbcode_eve_fit('\$1')"))
+			'eveitem'		=> array('bbcode_id' => 13,	'regexp' => array('#\[eveitem\]([0-9a-z \-']+{1,75})\[/eveitem\]#ise' => "\$this->bbcode_eve_item('\$1')")),
+			'evesystem'		=> array('bbcode_id' => 14,	'regexp' => array('#\[evesystem\]([0-9a-z \-]+{1,20})\[/evesystem\]#ise' => "\$this->bbcode_eve_system('\$1')")),
+			'evefit'		=> array('bbcode_id' => 15,	'regexp' => array('#\[evefit\]([0-9a-z \-'\n\[\],:\#\(\)]{1,1500})\[/evefit\]#ise' => "\$this->bbcode_eve_fit('\$1')"))
 ]]></action>
 			</edit>
 			<edit>
@@ -510,30 +452,22 @@
 ]]></action>
 			</edit>
 		</open>
-		<!--<open src="common.php">
+		<open src="common.php">
 			<edit>
 				<find><![CDATA[ foreach ($cache->obtain_hooks() as $hook)
 {
 	@include($phpbb_root_path . 'includes/hooks/' . $hook . '.' . $phpEx);
 } ]]></find>
-				<action type="after-add"><![CDATA[// EVE API start
-// Moved above masterswitch to avoid errors trying to use EVE BBcodes without having masterswitch enabled
-require($phpbb_root_path . "/includes/eveapi/functions_eveapi.php");
-	
-// Load PHEAL				
-require($phpbb_root_path . "/includes/eveapi/Pheal/Pheal.php");
-spl_autoload_register("Pheal::classload");
-PhealConfig::getInstance()->http_user_agent = "EVE API for phpBB 3.x (phpBB 3.x; Pheal)";
-					
-// Load TeamSpeak3 PHP Framework
-require($phpbb_root_path . "/includes/eveapi/TeamSpeak3/TeamSpeak3.php");
-					
-// Load OpenFireUserService class
-require($phpbb_root_path . "/includes/eveapi/OpenFireUserService/OpenFireUserService.php");
+				<action type="after-add"><![CDATA[// EVE Online BBcode MOD start
+// Load classes for each BBcode
+require($phpbb_root_path . "/includes/eveonline_bbcode_item.php");
+require($phpbb_root_path . "/includes/eveonline_bbcode_system.php");
+//require($phpbb_root_path . "/includes/eveonline_bbcode_fitting.php");
 
-// EVE API end ]]></action>
+
+// EVE Online BBcode MOD end ]]></action>
 			</edit>
-		</open>-->
+		</open>
                 
 		<diy-instructions lang="en"><![CDATA[--------------------------------------------------------------------------------------------
 
