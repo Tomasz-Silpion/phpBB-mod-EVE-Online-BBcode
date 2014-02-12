@@ -29,8 +29,6 @@ class Fitting
 {
 	public static function getFitting($fittingText)
 	{
-		$tempFittingOutput = "";
-		
 		// Read the fitting and put it into an array
 		$fitting = self::readLines($fittingText);
 		
@@ -42,16 +40,9 @@ class Fitting
 		
 		// Limit the amount of available slots by the slots the ship has
 		$fitting = self::limitSlots($fitting);
-		
-		echo "<pre>";
-		print_r($fitting);
-		echo "</pre>";
 
+		// Create HTML for fitting panel (includes shipDNA)
 		$fittingHTML = self::getFittingHTML($fitting);
-		
-		echo "<pre>";
-		print_r($shipDNA);
-		echo "</pre>";
 
 		return self::returnHTML($fitting['shipInfo'], $fittingText, $fittingHTML['html'], $fittingHTML['dna']);
 	}
@@ -217,6 +208,7 @@ class Fitting
 	{
         global $db, $table_prefix;
 		
+		// Create sql query from subsystems
 		$subSystemString = "";
 		foreach($subSystems as $subSystem)
 		{
@@ -224,6 +216,7 @@ class Fitting
 		}
 		$subSystemString = substr($subSystemString, 0, -1);
 		
+		// SUM the amount of slots the subsystems provide
 		$sql = 'SELECT SUM(Low) as Low, SUM(Medium) as Medium, SUM(High) as High, SUM(Drone) as Drone
 				FROM ' . $table_prefix . 'eveonline_bbcode_subsystems
 				WHERE LOWER(typeName) IN (' . $subSystemString . ')';
@@ -231,12 +224,15 @@ class Fitting
         $row = $db->sql_fetchrow($result);
         $db->sql_freeresult($result);
 		
+		// Check if items are really subsystems
 		if(isset($row['Low']) && isset($row['Medium']) && isset($row['High']) && isset($row['Drone']))
 		{
+			// Items are subsystems, now change the ship slots to what the subsystems allow for
 			$shipInfo['Low'] = $row['Low'];
 			$shipInfo['Medium'] = $row['Medium'];
 			$shipInfo['High'] = $row['High'];
 
+			// Reset drone to 4 position (all the fitting panel can handle)
 			if($shipInfo['Drone'] > 0)
 			{
 				$shipInfo['Drone'] = 4;
@@ -336,27 +332,70 @@ class Fitting
 						}
 					}
 					
+					// Get the HTMl for the requested item
 					$itemHTML = self::getItemHTML($itemName, $slot, $position);
 					$fittingHTML .= $itemHTML['html'];
 						
-					if(!isset($shipDNA[$slot][$itemHTML['itemID']]))
+					// Check if item is valid
+					if($itemHTML['itemID'])
 					{
-						$shipDNA[$slot][$itemHTML['itemID']] = 0;
+						// Check if item isn't already part of shipDNA array
+						if(!isset($shipDNA[$slot][$itemHTML['itemID']]))
+						{
+							$shipDNA[$slot][$itemHTML['itemID']] = 0;
+						}
+						
+						// Increase quantity of this item by one
+						$shipDNA[$slot][$itemHTML['itemID']]++;
 					}
-					$shipDNA[$slot][$itemHTML['itemID']]++;
 				}
 			}
 		}
 		
+		// Create HTML from shipDNA array
+		$shipDNAHTML = self::getShipDNAHTML($fitting['shipInfo']['typeID'], $shipDNA);
+		
 		return array(
 			'html'	=> $fittingHTML,
-			'dna'	=> self::getShipDNAHTML($shipDNA)
+			'dna'	=> $shipDNAHTML
 		);
 	}
 	
-	private static function getShipDNAHTML($shipDNA)
+	private static function getShipDNAHTML($shipID, $shipDNA)
 	{
-		return $shipDNA;
+		// Create HTML from shipDNA array
+		return	(string)$shipID . 
+				self::getShipDNASlot($shipDNA, 'Subsystem') .
+				self::getShipDNASlot($shipDNA, 'High') .
+				self::getShipDNASlot($shipDNA, 'Medium') .
+				self::getShipDNASlot($shipDNA, 'Low') .
+				self::getShipDNASlot($shipDNA, 'Rig') .
+				self::getShipDNASlot($shipDNA, 'Drone') .
+				"::";
+	}
+	
+	private static function getShipDNASlot($shipDNA, $slotType)
+	{
+		$partOfLink = "";
+
+		// Check if the shipDNA array holds anything to avoid errors
+		if(isset($shipDNA[$slotType]) && !empty($shipDNA[$slotType]))
+		{
+			foreach($shipDNA[$slotType] as $item => $amount)
+			{
+				// Subsystems don't require quantity
+				if($slotType != 'Subsystem')
+				{
+					$partOfLink .= ":" . $item . ";" . $amount;
+				}
+				else
+				{
+					$partOfLink .= ":" . $item;
+				}
+			}
+		}
+
+		return $partOfLink;
 	}
 	
 	private static function returnHTML($shipInfo, $fittingText, $fittingOutput, $shipDNA)
@@ -368,7 +407,7 @@ class Fitting
 						'<ul class="fit-tabs">' . 
 							'<li class="fit-tab" onclick="chooseTab(this,\'loadout\');" onmouseover="this.style.cursor=\'pointer\'">Loadout</li>' . 
 							'<li class="fit-tab" onclick="chooseTab(this,\'export\');" onmouseover="this.style.cursor=\'pointer\'">Export</li>' . 
-							'<li class="fit-tab" onclick="' . $shipDNA . '" onmouseover="this.style.cursor=\'pointer\'">Ingame Fitting</li>' . 
+							'<li class="fit-tab" onclick="CCPEVE.showFitting(\'' . $shipDNA . '\');" onmouseover="this.style.cursor=\'pointer\'">Ingame Fitting</li>' . 
 						'</ul>' . 
 						'<div style="clear:both;"></div>' . 
 					'</div>' .
