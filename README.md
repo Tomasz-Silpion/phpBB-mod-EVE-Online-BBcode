@@ -15,7 +15,7 @@ This mod is licensed under a MIT style license, see LICENSE for further informat
 - Simple no-nonsense integration for EVE Online BBcodes
 - Lightweight and fast
 - Linking of items and systems, mainly for use with the ingame browser
-- Showcasing ship fittings, and ability to show them ingame using the ingame browser
+- Showcasing ship fittings, and the ability to load them ingame using the ingame browser
 
 ## REQUIREMENTS
 - phpBB 3.0.12
@@ -27,8 +27,6 @@ This mod is licensed under a MIT style license, see LICENSE for further informat
 Download this project as a zipfile and install it to the phpBB forum using AutoMOD.
 
 ## USAGE
-This is a very basic example.
-
 ```
 
 [eveitem]Cap Recharger II[/eveitem]
