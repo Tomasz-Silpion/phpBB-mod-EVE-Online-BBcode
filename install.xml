@@ -5,7 +5,7 @@
 	<header>
 		<license>http://opensource.org/licenses/MIT The MIT License (MIT)</license>
 
-		<title lang="en">EVE Online BBcode for phpBB mod, v0.1.0</title>
+		<title lang="en">EVE Online BBcode for phpBB mod, v1.0.0</title>
 
 		<description lang="en">This file contains the instructions for the installation of the EVE Online BBcode for phpBB mod</description>
 
@@ -22,7 +22,7 @@
 			</author>
 		</author-group>
 
-		<mod-version>0.1.0</mod-version>
+		<mod-version>1.0.0</mod-version>
 
 		<installation>
 			<level>easy</level>
@@ -33,7 +33,7 @@
 		<history>
 			<entry>
 				<date>2014-02-11</date>
-				<rev-version>0.1.0</rev-version>
+				<rev-version>1.0.0</rev-version>
 				<changelog lang="en">
 					<change>Initial commit, split from original package for easy maintainance and a more focussed approach.</change>
 				</changelog>

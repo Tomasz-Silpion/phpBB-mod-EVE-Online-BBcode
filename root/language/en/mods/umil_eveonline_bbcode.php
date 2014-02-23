@@ -39,7 +39,7 @@ if (empty($lang) || !is_array($lang))
 $lang = array_merge($lang, array(
 	'UMIL_EVEONLINE_BBCODE'				=> 'EVE Online BBcode MOD by Cyerus',
 	
-	'UMIL_EVEONLINE_BBCODE_0_1_0'		=> 'Succesfully (un)installed version 0.1.0',
+	'UMIL_EVEONLINE_BBCODE_1_0_0'		=> 'Succesfully (un)installed version 1.0.0',
 ));
 
 ?>

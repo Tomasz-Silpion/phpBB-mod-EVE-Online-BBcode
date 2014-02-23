@@ -50,8 +50,8 @@ $version_config_name = 'eveonline_bbcode_version';
 * The version numbering must otherwise be compatible with the version_compare function - http://php.net/manual/en/function.version-compare.php
 */
 $versions = array(
-	'0.1.0'	=> array(
-		'custom'	=> 'umil_eveonline_bbcode_0_1_0',
+	'1.0.0'	=> array(
+		'custom'	=> 'umil_eveonline_bbcode_1_0_0',
 	),
 );
 
