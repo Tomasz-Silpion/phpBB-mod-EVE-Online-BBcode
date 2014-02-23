@@ -17,9 +17,9 @@
 				<realname>Jordy Wille</realname>
 				<username phpbbcom="no">Cyerus</username>
 				<homepage>https://eve-it.org</homepage>
-      		<contributions-group>
-      		  <contributions status="current" from="2010-07-10" position="Developer"/>
-      		</contributions-group>
+				<contributions-group>
+					<contributions status="current" from="2010-07-10" position="Developer"/>
+				</contributions-group>
 			</author>
 		</author-group>
 
@@ -30,16 +30,6 @@
 			<time>60</time>
 			<target-version>3.0.12</target-version>
 		</installation>
-
-		<history>
-			<entry>
-				<date>2014-02-11</date>
-				<rev-version>1.0.0</rev-version>
-				<changelog lang="en">
-					<change>Initial commit, split from original package for easy maintainance and a more focussed approach.</change>
-				</changelog>
-			</entry>
-		</history>
 
 		<link-group>
 			<link type="parent" lang="en" href="../install.xml">Main installation</link>
