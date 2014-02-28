@@ -16,7 +16,7 @@
 			<author>
 				<realname>Jordy Wille</realname>
 				<username phpbbcom="no">Cyerus</username>
-				<homepage>http://eve-it.org</homepage>
+				<homepage>http://eve-it.org/my-phpbb-mods/eve-online-bbcode/</homepage>
 				<contributions-group>
 					<contributions status="current" from="2010-07-10" position="Developer"/>
 				</contributions-group>
@@ -41,12 +41,6 @@
 			<file from="root/styles/subsilver2/*.*" to="styles/subsilver2/*.*" />
 		</copy>
 		
-		<!--<open src="styles/subsilver2/template/overall_footer.html">
-			<edit>
-				<find><![CDATA[	<span class="copyright">{CREDIT_LINE}]]></find>
-				<action type="replace-with"><![CDATA[	<span class="copyright">{CREDIT_LINE} &#166; Powered by <a href="https://forums.eveonline.com/default.aspx?g=posts&m=184934">EVE API v6.3.1 for phpBB 3.x</a> - <a href="#" onclick="CCPEVE.showInfo(1377, 1934722728)">Cyerus</a>]]></action>
-			</edit>
-		</open>-->
 		<open src="styles/subsilver2/template/overall_header.html">
 			<edit>
 				<find><![CDATA[<link rel="stylesheet" href="{T_STYLESHEET_LINK}" type="text/css" />]]></find>
